@@ -1147,6 +1147,18 @@ cdef class camera:
     check(gp_camera_capture(self.camera, GP_CAPTURE_IMAGE, &path, NULL))
     return (path.folder, path.name)
 
+  def capture_preview(self, out):
+    cdef CameraFile *cfile
+    cdef char *data
+    cdef unsigned long size
+    check( gp_file_new( &cfile ) )
+    check(gp_camera_capture_preview(self.camera, cfile, NULL))
+    check_unref( gp_file_get_data_and_size( cfile, &data, &size ), cfile )
+    outfile = open(out, 'wb')
+    outfile.write( PyString_FromStringAndSize( data, size ) )
+    outfile.close()
+    gp_file_unref( cfile )
+
   def wait_for_event(self,int timeout):
     cdef CameraEventType event
     cdef void *data
